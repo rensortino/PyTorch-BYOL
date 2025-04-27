@@ -77,7 +77,7 @@ class BYOLTrainer:
                 niter += 1
             
             if len(batch_view_1) != self.batch_size:
-                n_images = len(train_loader) - 1 * self.batch_size + len(batch_view_1)
+                n_images = (len(train_loader) - 1) * self.batch_size + len(batch_view_1)
             else:
                 n_images = len(train_loader) * self.batch_size
             avg_speed = int(n_images / (time.time() - start))

@@ -31,7 +31,7 @@ def read_images(
         interp_type=types.INTERP_TRIANGULAR,
     )
 
-    return images
+    return images, labels
 
 
 def random_grayscale(images, p=0.2):
@@ -105,7 +105,7 @@ def simclr_dali_transforms(images, image_size=224):
 
 @pipeline_def(enable_conditionals=True)
 def simclr_dali_pipeline(image_dir, shuffle=True, image_size=224, reader_name="Reader"):
-    images = read_images(image_dir, shuffle, reader_name=reader_name)
+    images, labels = read_images(image_dir, shuffle, reader_name=reader_name)
     view1 = simclr_dali_transforms(images, image_size=image_size)
     view2 = simclr_dali_transforms(images, image_size=image_size)
-    return view1, view2
+    return view1, view2, labels

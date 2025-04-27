@@ -10,11 +10,10 @@ class DALIGenericIteratorWithViews(DALIGenericIterator):
         data = data[0]
 
         views = []
-        for view in self.output_map:
-            if view not in data:
-                raise ValueError(f"View {view} not found in the output data.")
-            views.append(data[view])
-        return views
+        for output_key in self.output_map:
+            if "view" in output_key:
+                views.append(data[output_key])
+        return views, data["label"]
 
     def __len__(self):
         """Return the number of iterations per epoch."""

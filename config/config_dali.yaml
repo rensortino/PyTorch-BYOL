@@ -30,4 +30,4 @@ optimizer:
 
 dali:
   enabled: true
-  reader_name: ImgReader
+  reader_name: ImgReader # Needed to avoid indefinite looping over the dataset (ref https://docs.nvidia.com/deeplearning/dali/user-guide/docs/index.html)

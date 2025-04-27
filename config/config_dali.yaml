@@ -9,7 +9,7 @@ network:
     projection_size: 128
 
 dataset:
-  root: datasets/exposure_rated/ratings
+  root: /path/to/dataset # This should follow the same structure of the ImageFolder dataset
 
 data_transforms:
   s: 1

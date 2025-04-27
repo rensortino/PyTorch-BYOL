@@ -2,7 +2,11 @@ import os
 
 import torch
 import yaml
+from torch.utils.data.dataloader import DataLoader
 from torchvision import datasets
+
+from data.dali_pipeline import simclr_dali_pipeline
+from data.dali_iterator import DALIGenericIteratorWithViews
 from data.multi_view_data_injector import MultiViewDataInjector
 from data.transforms import get_simclr_data_transforms
 from models.mlp_head import MLPHead
@@ -19,11 +23,20 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"Training with: {device}")
 
-    data_transform = get_simclr_data_transforms(**config['data_transforms'])
-
-    train_dataset = datasets.STL10('/home/thalles/Downloads/', split='train+unlabeled', download=True,
+    if config['dali']['enabled']:
+        dali_pipeline = simclr_dali_pipeline(config['dataset']['root'], batch_size=config['trainer']['batch_size'],
+                                           num_threads=config['trainer']['num_workers'], device_id=0, reader_name=config['dali']['reader_name'],
+                                           image_size=eval(config['data_transforms']['input_shape'])[0], shuffle=True)
+        dali_pipeline.build()
+        train_loader = DALIGenericIteratorWithViews(dali_pipeline, ['view1', 'view2', "label"], reader_name=config['dali']['reader_name'])
+    else:
+        data_transform = get_simclr_data_transforms(**config['data_transforms'])
+        train_dataset = datasets.STL10('/home/thalles/Downloads/', split='train+unlabeled', download=True,
                                    transform=MultiViewDataInjector([data_transform, data_transform]))
-
+        train_loader = DataLoader(train_dataset, batch_size=config['trainer']['batch_size'],
+                                num_workers=config['trainer']['num_workers'], drop_last=False, shuffle=True)
+    
+    
     # online network
     online_network = ResNet18(**config['network']).to(device)
     pretrained_folder = config['network']['fine_tune_from']
@@ -59,7 +72,7 @@ def main():
                           device=device,
                           **config['trainer'])
 
-    trainer.train(train_dataset)
+    trainer.train(train_loader)
 
 
 if __name__ == '__main__':

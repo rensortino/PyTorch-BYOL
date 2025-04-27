@@ -1,8 +1,9 @@
 import os
+import time
+
 import torch
 import torch.nn.functional as F
 import torchvision
-from torch.utils.data.dataloader import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from utils import _create_model_training_folder
@@ -43,13 +44,11 @@ class BYOLTrainer:
             param_k.data.copy_(param_q.data)  # initialize
             param_k.requires_grad = False  # not update by gradient
 
-    def train(self, train_dataset):
-
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size,
-                                  num_workers=self.num_workers, drop_last=False, shuffle=True)
+    def train(self, train_loader):
 
         niter = 0
         model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
+        start = time.time()
 
         self.initializes_target_network()
 
@@ -76,8 +75,14 @@ class BYOLTrainer:
 
                 self._update_target_network_parameters()  # update the key encoder
                 niter += 1
-
-            print("End of epoch {}".format(epoch_counter))
+            
+            if len(batch_view_1) != self.batch_size:
+                n_images = len(train_loader) - 1 * self.batch_size + len(batch_view_1)
+            else:
+                n_images = len(train_loader) * self.batch_size
+            avg_speed = int(n_images / (time.time() - start))
+            start = time.time()
+            print("End of epoch {}\t{} img/s".format(epoch_counter, avg_speed))
 
         # save checkpoints
         self.save_model(os.path.join(model_checkpoints_folder, 'model.pth'))

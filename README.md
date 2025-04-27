@@ -12,9 +12,17 @@ $ conda activate byol
 $ python main.py
 ```
 
+### Optional: Install NVIDIA DALI for faster data loading
+```
+pip install nvidia-dali-cuda120
+```
+For more information, follow the official guide: https://docs.nvidia.com/deeplearning/dali/user-guide/docs/installation.html
+
 ## Config
 
 Before running PyTorch BYOL, make sure you choose the correct running configurations on the config.yaml file.
+
+To run the training with [NVIDIA DALI](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/index.html), select the configuration file `config/config_dali.yaml`.
 
 ```yaml
 network:
@@ -44,6 +52,9 @@ optimizer:
     lr: 0.03
     momentum: 0.9
     weight_decay: 0.0004
+
+dali:
+  enabled: false
 ```
 
 ## Feature Evaluation
